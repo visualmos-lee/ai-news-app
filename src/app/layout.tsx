@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import {
+  ClerkProvider,
+  Show,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
+import { Suspense } from "react";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,11 +27,29 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
-    </html>
+    <ClerkProvider>
+      <html
+        lang="ko"
+        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      >
+        <body className="min-h-full flex flex-col">
+          <header className="flex h-14 items-center justify-between border-b border-black/[.08] px-6 dark:border-white/[.145]">
+            <span className="font-semibold">AI 뉴스 수집기</span>
+            <div className="flex items-center gap-3">
+              <Suspense>
+                <Show when="signed-out">
+                  <SignInButton mode="modal" />
+                  <SignUpButton mode="modal" />
+                </Show>
+                <Show when="signed-in">
+                  <UserButton />
+                </Show>
+              </Suspense>
+            </div>
+          </header>
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
