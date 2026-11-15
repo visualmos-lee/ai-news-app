@@ -1,5 +1,13 @@
 import Parser from "rss-parser";
-import type { NewArticle } from "@/db/schema";
+/** RSS에서 뽑은 기사. 번역·요약·분류 전 상태. */
+export type RssArticle = {
+  url: string;
+  titleEn: string;
+  source: string;
+  publishedAt: Date;
+  /** 원문 발췌 (Claude 입력용, 저장하지 않는다) */
+  snippet: string | null;
+};
 
 // PRD §4의 수집 대상 피드
 const FEEDS = [
@@ -16,7 +24,7 @@ const FEEDS = [
 const parser = new Parser({ timeout: 10_000 });
 
 export type FetchResult = {
-  articles: NewArticle[];
+  articles: RssArticle[];
   failedSources: string[];
 };
 
@@ -29,7 +37,7 @@ export async function fetchRecentArticles(hours = 24): Promise<FetchResult> {
   );
 
   // URL 기준 중복 제거 (피드 간·피드 내 중복 모두 처리)
-  const byUrl = new Map<string, NewArticle>();
+  const byUrl = new Map<string, RssArticle>();
   const failedSources: string[] = [];
 
   results.forEach((result, i) => {
@@ -50,8 +58,7 @@ export async function fetchRecentArticles(hours = 24): Promise<FetchResult> {
         titleEn: item.title.trim(),
         source,
         publishedAt,
-        // 임시: Claude 요약 기능 전까지 RSS 원문 요약을 summaryKo에 넣는다.
-        summaryKo: toSummary(item.contentSnippet ?? item.content),
+        snippet: toSummary(item.contentSnippet ?? item.content),
       });
     }
   });
