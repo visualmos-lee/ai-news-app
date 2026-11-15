@@ -8,6 +8,10 @@ Fresh `create-next-app` scaffold (Next.js 16, React 19, TypeScript, Tailwind CSS
 
 Planned stack (not yet installed): Clerk (auth, all routes protected), Neon Postgres + Drizzle ORM, Claude API (`ANTHROPIC_API_KEY`), Notion MCP server (`NOTION_TOKEN`, `NOTION_DATABASE_ID`). Env var list is in PRD §10.
 
+## UI guide
+
+`ui.md` (Korean) is the UI style guide: Tailwind tokens, dashboard layout (category bar with an "add category" button above the news card grid), card design, states, and accessibility. Read it before building or changing any UI and follow it.
+
 ## Commands
 
 - `npm run dev` — dev server
