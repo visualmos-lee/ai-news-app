@@ -1,6 +1,7 @@
-import { count, desc, eq, isNull, or } from "drizzle-orm";
+import { auth } from "@clerk/nextjs/server";
+import { and, count, desc, eq, inArray, isNull, or } from "drizzle-orm";
 import { db } from "@/db";
-import { articles, categories } from "@/db/schema";
+import { articles, categories, notionSaves } from "@/db/schema";
 import { ArticleCard } from "./article-card";
 import { CategoryBar } from "./category-bar";
 import { Pagination } from "./pagination";
@@ -47,6 +48,25 @@ export async function DashboardContent({
     .limit(PAGE_SIZE)
     .offset((currentPage - 1) * PAGE_SIZE);
 
+  // 현재 사용자가 이미 Notion에 저장한 기사
+  const { userId } = await auth();
+  const savedRows =
+    userId && rows.length > 0
+      ? await db
+          .select({ articleId: notionSaves.articleId })
+          .from(notionSaves)
+          .where(
+            and(
+              eq(notionSaves.userId, userId),
+              inArray(
+                notionSaves.articleId,
+                rows.map((r) => r.article.id),
+              ),
+            ),
+          )
+      : [];
+  const savedIds = new Set(savedRows.map((r) => r.articleId));
+
   const hrefFor = (p: number) => {
     const params = new URLSearchParams();
     if (selected) params.set("category", String(selected.id));
@@ -72,6 +92,7 @@ export async function DashboardContent({
               key={article.id}
               article={article}
               categoryName={categoryName}
+              saved={savedIds.has(article.id)}
             />
           ))}
         </div>
